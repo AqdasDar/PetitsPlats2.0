@@ -1,6 +1,3 @@
-export function search(query) {
-}
-
 /*
 Début
 |
@@ -29,12 +26,3 @@ export function search(query, recipes) {
     }
     return results;
 }
-
-/*
-Début
-|
-|--> Retourner recipes.filter(recette => recette.title contient query OU recette.ingredients contient query OU recette.description contient query)
-|
-Fin
-
- */
