@@ -18,17 +18,18 @@ Début
 |
 |--> Retourner results
 |
-Fin
-*/
-export function search(query, recipes) {
-    let results = [];
-    for (let i = 0; i < recipes.length; i++) {
-        if (recipes[i].title.includes(query) || recipes[i].ingredients.includes(query) || recipes[i].description.includes(query)) {
-            results.push(recipes[i]);
-        }
-    }
-    return results;
-}
+// Fin
+// */
+
+// export function search(query, recipes) {
+//     let results = [];
+//     for (let i = 0; i < recipes.length; i++) {
+//         if (recipes[i].title.includes(query) || recipes[i].ingredients.includes(query) || recipes[i].description.includes(query)) {
+//             results.push(recipes[i]);
+//         }
+//     }
+//     return results;
+// }
 
 /*
 Début
