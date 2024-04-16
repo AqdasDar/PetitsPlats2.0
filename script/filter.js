@@ -10,6 +10,18 @@ function attachClickListener(li, ul, selectedUl, category, data) {
 
     // Marquer l'élément de liste comme ayant un écouteur d'événements attaché
     li.listenerAttached = true;
+    
+    //function qui supprime les doublons et supprimes les 's' à la fin des mots si il y en a pour chaque catégorie
+    function removeDuplicatesAndS(category) {
+        let tags = [...new Set(data[category])].sort();
+        tags = tags.map(tag => {
+            if (tag.endsWith('s')) {
+                return tag.slice(0, -1);
+            }
+            return tag;
+        });
+        return tags;
+    }
 
     //  filtre les recettes en fonction des tags sélectionnés
     function filterRecipesByTags(data, category, selectedFilter) {
@@ -169,6 +181,12 @@ function attachClickListener(li, ul, selectedUl, category, data) {
             // Supprimer l'élément de liste de la liste originale
             event.target.remove();
 
+
+            //supprimer les doublons de ustensiles, appareils et ingredients
+            removeDuplicatesAndS('appareils');
+            removeDuplicatesAndS('ingredients');
+            removeDuplicatesAndS('ustensiles');
+            
             // Mettre à jour les recettes filtrées
             const selectedFilter = [...selectedUl.children].map(li => li.textContent);
             const filteredRecipes = filterRecipesByTags(data, category, selectedFilter);
@@ -180,13 +198,16 @@ function attachClickListener(li, ul, selectedUl, category, data) {
             filteredRecipes.forEach(recipe => {
                 if (category === 'appareils') {
                     tags.push(recipe.appliance);
+                    removeDuplicatesAndS('appareils');
                 }
                 if (category === 'ustensiles') {
                     tags.push(...recipe.ustensils);
+                    removeDuplicatesAndS('ustensiles');
                 }
                 if (category === 'ingredients') {
                     recipe.ingredients.forEach(ingredient => {
                         tags.push(ingredient.ingredient);
+                        removeDuplicatesAndS('ingredients');
                     });
                 }
             });
@@ -196,6 +217,7 @@ function attachClickListener(li, ul, selectedUl, category, data) {
 
             // Exclure les tags sélectionnés des tags
             tags = tags.filter(tag => !selectedFilter.includes(tag));
+            
 
 
             tags.forEach(tag => {
@@ -206,7 +228,9 @@ function attachClickListener(li, ul, selectedUl, category, data) {
                 attachClickListener(li, ul, selectedUl, category, data);
             });
 
+            // Afficher les cartes des recettes filtrées
             displayCards(filteredRecipes);
+            
         }
     });
 
