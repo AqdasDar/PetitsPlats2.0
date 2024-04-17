@@ -20,6 +20,8 @@ export function search(query, recipes) {
 import {recipes} from '../data/recipes.js';
 import {displayCards} from './card.js';
 
+import {updateFilterTags} from './filter.js';
+
 export function handleSearch() {
     const searchInput = document.getElementById('search');
     const totalRecette = document.getElementById('total_recette');
@@ -27,14 +29,15 @@ export function handleSearch() {
     // add event listener for the search input
     searchInput.addEventListener('input', (event) => {
         searchResults = search(event.target.value, recipes);
-        console.log(searchResults);
+        // console.log(searchResults);
         if (event.target.value.length === 0 || event.target.value.length < 3) {
             //keep the previous results
             displayCards(recipes);
             totalRecette.textContent = `${recipes.length} recettes trouvées`;
+            updateFilterTags(recipes); // Update filters with all recipes
         } else if (event.target.value.length >= 3) {
             const filteredResults = searchResults;
-            console.log(filteredResults);
+            // console.log(filteredResults);
             // Clear previous results
             document.getElementById('results').innerHTML = '';
             // Display new results
@@ -44,6 +47,8 @@ export function handleSearch() {
                 displayCards(filteredResults);
                 // Update total recette count
                 totalRecette.textContent = `${filteredResults.length} recettes trouvées`;
+                updateFilterTags(filteredResults); // Update filters with search results
+                console.log(filteredResults);
             }
         }
     });

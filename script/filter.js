@@ -273,7 +273,7 @@ function capitaliseFirstLetter(string) {
 }
 
 // Mettre à jour les tags du filtre
-export function updateFilterTags() {
+export function updateFilterTags(recipes) {
     // Initialiser les listes d'ingrédients, d'appareils et d'ustensiles
     let ingredients = [];
     let appareils = [];
@@ -326,6 +326,7 @@ export function updateFilterTags() {
     });
 
 }
+
 // Gérer les filtres
 export function handleFilters() {
     const filterButtons = document.querySelectorAll('.filter-button');
