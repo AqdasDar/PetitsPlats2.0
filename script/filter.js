@@ -1,5 +1,6 @@
 import {recipes} from "../data/recipes.js";
 import {displayCards} from "./card.js";
+import {search} from "./search.js";
 
 // attache un écouteur d'événements à un élément de liste (li)
 function attachClickListener(li, ul, selectedUl, category, data) {
@@ -12,7 +13,7 @@ function attachClickListener(li, ul, selectedUl, category, data) {
     li.listenerAttached = true;
     
     //function qui supprime les doublons et supprimes les 's' à la fin des mots si il y en a pour chaque catégorie
-    function removeDuplicatesAndS(category) {
+    function removeDuplicatesAndS(category, selectedItems) {
         let tags = [...new Set(data[category])].sort();
         tags = tags.map(tag => {
             if (tag.endsWith('s')) {
@@ -20,13 +21,30 @@ function attachClickListener(li, ul, selectedUl, category, data) {
             }
             return tag;
         });
+
+        // Exclure les éléments sélectionnés de la liste
+        tags = tags.filter(tag => !selectedItems.includes(tag));
+
         return tags;
     }
 
     //  filtre les recettes en fonction des tags sélectionnés
-    function filterRecipesByTags(data, category, selectedFilter) {
+    function filterRecipesByTags(data, category, selectedFilter , initialSearch) {
         // Initialiser les recettes filtrées avec toutes les recettes
         let filteredRecipes = recipes;
+        
+        //filtrer les recettes en fonction de la recherche initiale
+        if (initialSearch) {
+            filteredRecipes = search(initialSearch, filteredRecipes);
+            //supprimer les doublons
+            removeDuplicatesAndS('appareils');
+            removeDuplicatesAndS('ingredients');
+            removeDuplicatesAndS('ustensiles');
+        }
+        //supprimer les doublons
+        removeDuplicatesAndS('appareils');
+        removeDuplicatesAndS('ingredients');
+        removeDuplicatesAndS('ustensiles');
         // Parcourir tous les filtres sélectionnés
         selectedFilter.forEach(selectedFilter => {
             // Normaliser le texte du filtre
@@ -285,10 +303,6 @@ export function updateFilterTags(recipes) {
             // Normaliser le texte de l'ingrédient
             let normalizedIngredient = ingredient.ingredient.toLowerCase().trim();
             normalizedIngredient = normalizedIngredient.charAt(0).toUpperCase() + normalizedIngredient.slice(1);
-            // Supprimer le 's' à la fin de l'ingrédient
-            if (normalizedIngredient.endsWith('s')) {
-                normalizedIngredient = normalizedIngredient.slice(0, -1);
-            }
             ingredients.push(normalizedIngredient);
         });
         let normalizedAppliance = recipe.appliance.toLowerCase().trim();
