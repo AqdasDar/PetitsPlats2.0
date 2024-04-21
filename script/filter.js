@@ -23,7 +23,9 @@ function attachClickListener(li, ul, selectedUl, category, data) {
         });
 
         // Exclure les éléments sélectionnés de la liste
-        tags = tags.filter(tag => !selectedItems.includes(tag));
+        if (selectedItems) {
+            tags = tags.filter(tag => !selectedItems.includes(tag));
+        }
 
         return tags;
     }

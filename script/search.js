@@ -7,11 +7,11 @@ Fin
 
  */
 export function search(query, recipes) {
-    const lowerCaseQuery = query.toLowerCase();
+    const safeQuery = encodeURIComponent(query).toLowerCase();
     const results = recipes.filter(recipe =>
-        recipe.name.toLowerCase().includes(lowerCaseQuery) ||
-        recipe.ingredients.some(ingredient => ingredient.ingredient.toLowerCase().includes(lowerCaseQuery)) ||
-        recipe.description.toLowerCase().includes(lowerCaseQuery)
+        recipe.name.toLowerCase().includes(safeQuery) ||
+        recipe.ingredients.some(ingredient => ingredient.ingredient.toLowerCase().includes(safeQuery)) ||
+        recipe.description.toLowerCase().includes(safeQuery)
     );
     // Convert results to Set to remove duplicates, then convert back to array
     return [...new Set(results)];
