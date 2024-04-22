@@ -22,12 +22,17 @@ import {displayCards} from './card.js';
 
 import {updateFilterTags} from './filter.js';
 
+export const searchState = {
+    initialSearch: '',
+};
+
 export function handleSearch() {
     const searchInput = document.getElementById('search');
     const totalRecette = document.getElementById('total_recette');
     let searchResults;
     // add event listener for the search input
     searchInput.addEventListener('input', (event) => {
+        searchState.initialSearch = event.target.value; // Save the initial search value
         searchResults = search(event.target.value, recipes);
         // console.log(searchResults);
         if (event.target.value.length === 0 || event.target.value.length < 3) {

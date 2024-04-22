@@ -1,7 +1,10 @@
 import {recipes} from "../data/recipes.js";
 import {displayCards} from "./card.js";
 import {search} from "./search.js";
+import {searchState} from "./search.js";
 
+
+let initialSearch = '';
 // attache un écouteur d'événements à un élément de liste (li)
 function attachClickListener(li, ul, selectedUl, category, data) {
     // Si un écouteur d'événements a déjà été attaché, on ne fait rien
@@ -11,65 +14,57 @@ function attachClickListener(li, ul, selectedUl, category, data) {
 
     // Marquer l'élément de liste comme ayant un écouteur d'événements attaché
     li.listenerAttached = true;
-    
-    //function qui supprime les doublons et supprimes les 's' à la fin des mots si il y en a pour chaque catégorie
-    function removeDuplicatesAndS(category, selectedItems) {
-        let tags = [...new Set(data[category])].sort();
-        tags = tags.map(tag => {
-            if (tag.endsWith('s')) {
-                return tag.slice(0, -1);
-            }
-            return tag;
-        });
 
-        // Exclure les éléments sélectionnés de la liste
-        if (selectedItems) {
-            tags = tags.filter(tag => !selectedItems.includes(tag));
-        }
-
-        return tags;
+    function removeDuplicates(category) {
+        // Supprimer les doublons de la liste des tags non sélectionnés
+        data[category] = [...new Set(data[category])].sort();
     }
 
+
+
     //  filtre les recettes en fonction des tags sélectionnés
-    function filterRecipesByTags(data, category, selectedFilter , initialSearch) {
+    function filterRecipesByTags(data, category, selectedFilter) {
         // Initialiser les recettes filtrées avec toutes les recettes
         let filteredRecipes = recipes;
-        
-        //filtrer les recettes en fonction de la recherche initiale
-        if (initialSearch) {
-            filteredRecipes = search(initialSearch, filteredRecipes);
-            //supprimer les doublons
-            removeDuplicatesAndS('appareils');
-            removeDuplicatesAndS('ingredients');
-            removeDuplicatesAndS('ustensiles');
-        }
-        //supprimer les doublons
-        removeDuplicatesAndS('appareils');
-        removeDuplicatesAndS('ingredients');
-        removeDuplicatesAndS('ustensiles');
-        // Parcourir tous les filtres sélectionnés
-        selectedFilter.forEach(selectedFilter => {
-            // Normaliser le texte du filtre
-            let normalizedFilter = selectedFilter.toLowerCase().trim();
-            normalizedFilter = normalizedFilter.charAt(0).toUpperCase() + normalizedFilter.slice(1);
 
-            // Filtrer les recettes en fonction de la catégorie
-            if (category === 'ingredients') {
-                filteredRecipes = filteredRecipes.filter(recipe => {
-                    return recipe.ingredients.some(ingredient => ingredient.ingredient === normalizedFilter);
-                });
-            } else if (category === 'appareils') {
-                filteredRecipes = filteredRecipes.filter(recipe => {
-                    return recipe.appliance === normalizedFilter;
-                });
-            } else if (category === 'ustensiles') {
-                // toLowerCase() pour rendre la recherche insensible à la casse
+        // Filtrer les recettes en fonction de la recherche initiale
+        if (searchState.initialSearch) {
+            filteredRecipes = search(searchState.initialSearch, filteredRecipes);
+        }
+
+        // Récupérer tous les tags sélectionnés de toutes les catégories
+        const selectedFilters = {
+            ingredients: [...document.querySelector('.selected_filter_tags_ingredients').children].map(li => li.textContent),
+            appareils: [...document.querySelector('.selected_filter_tags_appareils').children].map(li => li.textContent),
+            ustensiles: [...document.querySelector('.selected_filter_tags_ustensiles').children].map(li => li.textContent)
+        };
+
+        // Parcourir tous les filtres sélectionnés
+        Object.keys(selectedFilters).forEach(filterCategory => {
+            selectedFilters[filterCategory].forEach(selectedFilter => {
+                // Normaliser le texte du filtre
                 let normalizedFilter = selectedFilter.toLowerCase().trim();
-                filteredRecipes = filteredRecipes.filter(recipe => {
-                    return recipe.ustensils.some(ustensil => ustensil.toLowerCase() === normalizedFilter);
-                });
-            }
+                normalizedFilter = normalizedFilter.charAt(0).toUpperCase() + normalizedFilter.slice(1);
+
+                // Filtrer les recettes en fonction de la catégorie
+                if (filterCategory === 'ingredients') {
+                    filteredRecipes = filteredRecipes.filter(recipe => {
+                        return recipe.ingredients.some(ingredient => ingredient.ingredient === normalizedFilter);
+                    });
+                } else if (filterCategory === 'appareils') {
+                    filteredRecipes = filteredRecipes.filter(recipe => {
+                        return recipe.appliance === normalizedFilter;
+                    });
+                } else if (filterCategory === 'ustensiles') {
+                    // toLowerCase() pour rendre la recherche insensible à la casse
+                    let normalizedFilter = selectedFilter.toLowerCase().trim();
+                    filteredRecipes = filteredRecipes.filter(recipe => {
+                        return recipe.ustensils.some(ustensil => ustensil.toLowerCase() === normalizedFilter);
+                    });
+                }
+            });
         });
+
 
         // Initialiser les listes d'ingrédients, d'appareils et d'ustensiles
         let ingredients = [];
@@ -159,6 +154,10 @@ function attachClickListener(li, ul, selectedUl, category, data) {
             // Mettre à jour les recettes filtrées
             const selectedFilter = [...selectedUl.children].map(li => li.textContent);
             filterRecipesByTags(data, category, selectedFilter);
+            // Vérifier si le tag est déjà présent dans la liste des tags sélectionnés avant de l'ajouter à la liste originale
+            if (!selectedFilter.includes(event.target.textContent)) {
+                data[category].push(event.target.textContent);
+            }
         } else {
             // Ajouter la classe 'selected' à l'élément de liste cliqué
             event.target.classList.add('selected');
@@ -202,10 +201,13 @@ function attachClickListener(li, ul, selectedUl, category, data) {
             event.target.remove();
 
 
-            //supprimer les doublons de ustensiles, appareils et ingredients
-            removeDuplicatesAndS('appareils');
-            removeDuplicatesAndS('ingredients');
-            removeDuplicatesAndS('ustensiles');
+            // //supprimer les doublons de ustensiles, appareils et ingredients
+            // removeDuplicatesAndS('appareils');
+            // removeDuplicatesAndS('ingredients');
+            // removeDuplicatesAndS('ustensiles');
+            removeDuplicates(data.appareils);
+            removeDuplicates(data.ingredients);
+            removeDuplicates(data.ustensiles);
             
             // Mettre à jour les recettes filtrées
             const selectedFilter = [...selectedUl.children].map(li => li.textContent);
@@ -218,16 +220,19 @@ function attachClickListener(li, ul, selectedUl, category, data) {
             filteredRecipes.forEach(recipe => {
                 if (category === 'appareils') {
                     tags.push(recipe.appliance);
-                    removeDuplicatesAndS('appareils');
+                    // removeDuplicatesAndS('appareils');
+                    removeDuplicates(data.appareils);
                 }
                 if (category === 'ustensiles') {
                     tags.push(...recipe.ustensils);
-                    removeDuplicatesAndS('ustensiles');
+                    // removeDuplicatesAndS('ustensiles');
+                    removeDuplicates(data.ustensiles);
                 }
                 if (category === 'ingredients') {
                     recipe.ingredients.forEach(ingredient => {
                         tags.push(ingredient.ingredient);
-                        removeDuplicatesAndS('ingredients');
+                        // removeDuplicatesAndS('ingredients');
+                        removeDuplicates(data.ingredients);
                     });
                 }
             });
@@ -250,7 +255,6 @@ function attachClickListener(li, ul, selectedUl, category, data) {
 
             // Afficher les cartes des recettes filtrées
             displayCards(filteredRecipes);
-            
         }
     });
 
@@ -313,6 +317,10 @@ export function updateFilterTags(recipes) {
         let normalizedUstensils = recipe.ustensils.map(ustensil => ustensil.toLowerCase().trim());
         normalizedUstensils = normalizedUstensils.map(ustensil => capitaliseFirstLetter(ustensil));
         ustensiles.push(...normalizedUstensils);
+        //supprimer les doublons de ustensiles, appareils et ingredients
+        appareils = [...new Set(appareils)].sort();
+        ingredients = [...new Set(ingredients)].sort();
+        ustensiles = [...new Set(ustensiles)].sort();
     });
 
     // Supprimer les doublons et trier les listes
